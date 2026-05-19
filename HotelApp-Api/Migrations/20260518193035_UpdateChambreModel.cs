@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HotelApp_Api.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class UpdateChambreModel : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -49,9 +49,25 @@ namespace HotelApp_Api.Migrations
                 {
                     IdChambre = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Numero = table.Column<int>(type: "int", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Prix = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TotalImages = table.Column<int>(type: "int", nullable: false),
+                    FreeBreakfast = table.Column<bool>(type: "bit", nullable: false),
+                    FreeParking = table.Column<bool>(type: "bit", nullable: false),
+                    FreeWifi = table.Column<bool>(type: "bit", nullable: false),
+                    AirportTransferAvailable = table.Column<bool>(type: "bit", nullable: false),
+                    LoyaltyProgramAvailable = table.Column<bool>(type: "bit", nullable: false),
+                    Capacity = table.Column<int>(type: "int", nullable: false),
+                    SingleBeds = table.Column<int>(type: "int", nullable: false),
+                    KingBeds = table.Column<int>(type: "int", nullable: false),
+                    CurrentPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    OldPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    PricePerNight = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    Nights = table.Column<int>(type: "int", nullable: false),
+                    TaxesIncluded = table.Column<bool>(type: "bit", nullable: false),
+                    FreeCancellationAvailable = table.Column<bool>(type: "bit", nullable: false),
+                    Details = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
                     Statut = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     IdAdmin = table.Column<int>(type: "int", nullable: false),
                     AdminIdAdmin = table.Column<int>(type: "int", nullable: true)

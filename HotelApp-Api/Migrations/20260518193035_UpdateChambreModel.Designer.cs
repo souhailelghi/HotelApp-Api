@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelApp_Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260509233141_init")]
-    partial class init
+    [Migration("20260518193035_UpdateChambreModel")]
+    partial class UpdateChambreModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,24 +64,77 @@ namespace HotelApp_Api.Migrations
                     b.Property<int?>("AdminIdAdmin")
                         .HasColumnType("int");
 
+                    b.Property<bool>("AirportTransferAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CurrentPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("FreeBreakfast")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("FreeCancellationAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("FreeParking")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("FreeWifi")
+                        .HasColumnType("bit");
+
                     b.Property<int>("IdAdmin")
                         .HasColumnType("int");
 
-                    b.Property<int>("Numero")
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("KingBeds")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Prix")
+                    b.Property<bool>("LoyaltyProgramAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Nights")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("OldPrice")
                         .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("PricePerNight")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("SingleBeds")
+                        .HasColumnType("int");
 
                     b.Property<string>("Statut")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<bool>("TaxesIncluded")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TotalImages")
+                        .HasColumnType("int");
 
                     b.HasKey("IdChambre");
 

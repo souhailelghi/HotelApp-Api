@@ -4,6 +4,7 @@ using HotelApp_Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using HotelApp_Api.Data;
 using Microsoft.EntityFrameworkCore;
+using HotelApp_Api.Services;
 
 namespace HotelApp_Api.Controllers
 {
@@ -14,18 +15,21 @@ namespace HotelApp_Api.Controllers
         private readonly IGenericService<Reservation> _reservationService;
         private readonly IGenericService<Chambre> _chambreService;
         private readonly IGenericService<Client> _clientService;
+        private readonly EmailService _emailService;
         private readonly AppDbContext _context;
 
         public ReservationsController(
             IGenericService<Reservation> reservationService,
             IGenericService<Chambre> chambreService,
             IGenericService<Client> clientService,
-               AppDbContext context)
+               AppDbContext context,
+               EmailService emailService)
         {
             _reservationService = reservationService;
             _chambreService = chambreService;
             _clientService = clientService;
             _context = context;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -121,42 +125,42 @@ namespace HotelApp_Api.Controllers
                 IdClient = dto.IdClient,
                 IdChambre = dto.IdChambre
             };
+            // Change room status after successful reservation
+            chambre.Statut = "Reserved";
 
             await _reservationService.AddAsync(reservation);
+            await _chambreService.UpdateAsync(chambre);
+            var emailBody = $@"
+<h2>New Reservation - Dar Diafa Rabat</h2>
+
+<h3>Client Information</h3>
+<p><strong>Name:</strong> {client.Nom} {client.Prenom}</p>
+<p><strong>Email:</strong> {client.Email}</p>
+<p><strong>Phone:</strong> {client.Telephone}</p>
+
+<h3>Reservation Information</h3>
+<p><strong>Room:</strong> {chambre.Name}</p>
+<p><strong>Check-in:</strong> {reservation.DateDebut:yyyy-MM-dd}</p>
+<p><strong>Check-out:</strong> {reservation.DateFin:yyyy-MM-dd}</p>
+<p><strong>Status:</strong> {reservation.Statut}</p>
+";
+
+            try
+            {
+                await _emailService.SendReservationEmailAsync(
+                    "New Hotel Reservation",
+                    emailBody
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Email sending failed: " + ex.Message);
+            }
 
             return Ok(reservation);
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> CreateReservation(CreateReservationDto dto)
-        //{
-        //    var client = await _clientService.GetByIdAsync(dto.IdClient);
-        //    if (client == null)
-        //        return BadRequest("Client not found");
-
-        //    var chambre = await _chambreService.GetByIdAsync(dto.IdChambre);
-        //    if (chambre == null)
-        //        return BadRequest("Chambre not found");
-
-        //    if (chambre.Statut == "Occupied")
-        //        return BadRequest("Chambre already occupied");
-
-        //    var reservation = new Reservation
-        //    {
-        //        DateDebut = dto.DateDebut,
-        //        DateFin = dto.DateFin,
-        //        Statut = "Pending",
-        //        IdClient = dto.IdClient,
-        //        IdChambre = dto.IdChambre
-        //    };
-
-        //    chambre.Statut = "Occupied";
-
-        //    await _reservationService.AddAsync(reservation);
-        //    await _chambreService.UpdateAsync(chambre);
-
-        //    return Ok(reservation);
-        //}
+      
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateReservation(int id, CreateReservationDto dto)
