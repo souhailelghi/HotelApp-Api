@@ -9,6 +9,7 @@
 
         // Image
         public string ImageUrl { get; set; } = string.Empty;
+        public string ImageUrls { get; set; } = string.Empty;
 
         public int TotalImages { get; set; }
 

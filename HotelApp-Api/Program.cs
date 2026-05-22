@@ -40,6 +40,7 @@ app.UseHttpsRedirection();
 
 // Use CORS before Authorization
 app.UseCors("AllowReactApp");
+app.UseStaticFiles();
 
 app.UseAuthorization();
 

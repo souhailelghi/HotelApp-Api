@@ -13,13 +13,17 @@ namespace HotelApp_Api.Controllers
     {
         private readonly IGenericService<Chambre> _chambreService;
         private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _environment;
+
 
         public ChambresController(
             IGenericService<Chambre> chambreService,
-            AppDbContext context)
+            AppDbContext context,
+            IWebHostEnvironment environment)
         {
             _chambreService = chambreService;
             _context = context;
+            _environment = environment;
         }
 
         [HttpPut("refresh-status")]
@@ -119,6 +123,7 @@ namespace HotelApp_Api.Controllers
                 Name = dto.Name,
                 Description = dto.Description,
                 ImageUrl = dto.ImageUrl,
+                ImageUrls = dto.ImageUrls,
                 TotalImages = dto.TotalImages,
                 FreeBreakfast = dto.FreeBreakfast,
                 FreeParking = dto.FreeParking,
@@ -143,6 +148,42 @@ namespace HotelApp_Api.Controllers
 
             return Ok(chambre);
         }
+        [HttpPost("room-image")]
+        public async Task<IActionResult> UploadRoomImage(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var extension = Path.GetExtension(file.FileName).ToLower();
+
+            if (!allowedExtensions.Contains(extension))
+                return BadRequest("Only JPG, JPEG, PNG and WEBP images are allowed.");
+
+            var uploadsFolder = Path.Combine(
+                _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
+                "uploads",
+                "rooms"
+            );
+
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = $"{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var imageUrl = $"{Request.Scheme}://{Request.Host}/uploads/rooms/{fileName}";
+
+            return Ok(new
+            {
+                imageUrl
+            });
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateChambre(int id, CreateChambreDto dto)
@@ -155,6 +196,7 @@ namespace HotelApp_Api.Controllers
             chambre.Name = dto.Name;
             chambre.Description = dto.Description;
             chambre.ImageUrl = dto.ImageUrl;
+            chambre.ImageUrls = dto.ImageUrls;
             chambre.TotalImages = dto.TotalImages;
             chambre.FreeBreakfast = dto.FreeBreakfast;
             chambre.FreeParking = dto.FreeParking;
@@ -179,6 +221,52 @@ namespace HotelApp_Api.Controllers
             return NoContent();
         }
 
+        [HttpPost("room-images")]
+        public async Task<IActionResult> UploadRoomImages(List<IFormFile> files)
+        {
+            if (files == null || files.Count == 0)
+                return BadRequest("No files uploaded.");
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+
+            var uploadsFolder = Path.Combine(
+                _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
+                "uploads",
+                "rooms"
+            );
+
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var imageUrls = new List<string>();
+
+            foreach (var file in files)
+            {
+                if (file.Length == 0)
+                    continue;
+
+                var extension = Path.GetExtension(file.FileName).ToLower();
+
+                if (!allowedExtensions.Contains(extension))
+                    return BadRequest("Only JPG, JPEG, PNG and WEBP images are allowed.");
+
+                var fileName = $"{Guid.NewGuid()}{extension}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                var imageUrl = $"{Request.Scheme}://{Request.Host}/uploads/rooms/{fileName}";
+                imageUrls.Add(imageUrl);
+            }
+
+            return Ok(new
+            {
+                imageUrls
+            });
+        }
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteChambre(int id)
         {

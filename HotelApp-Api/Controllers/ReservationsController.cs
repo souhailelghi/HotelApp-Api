@@ -32,6 +32,52 @@ namespace HotelApp_Api.Controllers
             _emailService = emailService;
         }
 
+        [HttpGet("notifications")]
+        public async Task<IActionResult> GetBookingNotifications()
+        {
+            var reservations = await _context.Reservations
+                .OrderByDescending(r => r.IdReservation)
+                .ToListAsync();
+
+            var notifications = new List<object>();
+
+            foreach (var r in reservations)
+            {
+                var client = await _context.Clients
+                    .FirstOrDefaultAsync(c => c.IdClient == r.IdClient);
+
+                var chambre = await _context.Chambres
+                    .FirstOrDefaultAsync(c => c.IdChambre == r.IdChambre);
+
+                notifications.Add(new
+                {
+                    idReservation = r.IdReservation,
+                    dateDebut = r.DateDebut,
+                    dateFin = r.DateFin,
+                    statut = "Paid",
+
+                    idClient = r.IdClient,
+                    idChambre = r.IdChambre,
+
+                    clientName = client != null ? $"{client.Nom} {client.Prenom}" : "Unknown Client",
+                    clientEmail = client != null ? client.Email : "N/A",
+                    clientPhone = client != null ? client.Telephone : "N/A",
+
+                    roomName = chambre != null ? chambre.Name : "Unknown Room",
+                    roomCapacity = chambre != null ? chambre.Capacity : 0,
+                    roomPrice = chambre != null ? chambre.PricePerNight : 0,
+
+                    nights = (r.DateFin.Date - r.DateDebut.Date).Days,
+
+                    message = client != null && chambre != null
+                        ? $"New reservation from {client.Nom} {client.Prenom} for {chambre.Name}"
+                        : "Reservation created with missing client or room data"
+                });
+            }
+
+            return Ok(notifications);
+        }
+
         [HttpGet]
         public async Task<ActionResult<List<Reservation>>> GetReservations()
         {
@@ -121,7 +167,7 @@ namespace HotelApp_Api.Controllers
             {
                 DateDebut = dto.DateDebut,
                 DateFin = dto.DateFin,
-                Statut = "Pending",
+                Statut = "Paid",
                 IdClient = dto.IdClient,
                 IdChambre = dto.IdChambre
             };
